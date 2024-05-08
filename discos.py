@@ -1,5 +1,5 @@
 import os
-
+import subprocess
 # colores bonitos *brillitos*
 verde = '\033[32m'
 rojo = '\033[31m'
@@ -7,25 +7,28 @@ azul = '\033[34m'
 celeste = '\033[36m'
 amarillo = '\033[33m'
 reset = '\033[0m'
-
+USER = os.getlogin()
 def get_discos():
-    return os.listdir('/run/media/cris/')
+    path = '/run/media/' + USER + '/'
+    return os.listdir(path)
 
 def list_discos():
     os.system('clear')
     l = get_discos()
-    print()
     for i in range(0, len(l)):
         print(f"{verde}disco {i}: {l[i]}{reset}")
 
 def get_devices():
-    return os.system('ls /dev/ | grep sd')
+
+    output = subprocess.check_output(['ls', '/dev/']).decode('utf-8')
+    devices = [device.strip() for device in output.split('\n') if device.startswith('sd')]
+    return devices
 
 def list_devices():
     os.system('clear')
-    print()
     l = get_devices()
-    print(l)
+    for dev in l:
+        print(f"{verde}{dev}{reset}")
 
 def devices_memory():
     os.system('clear')
@@ -50,15 +53,18 @@ def menu_discos():
 def handle_menu_discos():
     while True:
         print(f"{azul}Manejar Discos{reset}\n")
-
         opt = menu_discos()
         if opt == 1:
             list_discos()
         elif opt == 2:
-            disco = int(input('Disco: '))
             l = get_discos()
-            disco = l[disco]
-            print(mostrar_contenido(disco))
+            d = int(input('Disco: '))
+            if d > len(l):
+                print(f"{rojo}Disco no válido{reset}")
+                continue
+            else:
+                disco = l[d]
+                print(mostrar_contenido(disco))
         elif opt == 0:
             break
         else:
@@ -82,8 +88,6 @@ def main():
         elif opcion == 3:
             print(devices_memory())
         elif opcion == 4:
-            print(f'{verde}Manejar Discos{reset}\n')
-            opcion = menu_discos()
             handle_menu_discos()
         elif opcion == 0:
             break
